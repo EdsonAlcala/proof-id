@@ -8,16 +8,38 @@ contract ProofIdNFT is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-constructor() ERC721("proofId", "pID") {}
+    mapping(address => uint256[]) private nfts;
 
-function mintNFT(address recipient, string memory tokenURI)
-        public onlyOwner
+    constructor() ERC721("ProofIdNFT", "PNFT") {}
+
+    function mintNFT(address recipient, string memory tokenURI)
+        public
+        onlyOwner
         returns (uint256)
     {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         _mint(recipient, newItemId);
+        nfts[recipient].push(newItemId);
         _setTokenURI(newItemId, tokenURI);
         return newItemId;
+    }
+
+    function getAllNFTs(address _owner)
+        external
+        view
+        returns (string[] memory result)
+    {
+        uint256[] memory allIds = nfts[_owner];
+        uint256 totalItems = allIds.length;
+
+        result = new string[](totalItems);
+
+        for (uint256 index = 0; index < totalItems; index++) {
+            uint256 currentId = allIds[index];
+            result[index] = tokenURI(currentId);
+        }
+
+        return result;
     }
 }
